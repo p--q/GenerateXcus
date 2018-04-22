@@ -5,47 +5,46 @@ import os, glob
 from xml.etree import ElementTree
 from xml.dom import minidom
 def macro(documentevent=None):  # 引数は文書のイベント駆動用。
+	pwd = os.path.dirname(os.path.abspath(__file__))  # このスクリプトのあるフォルダのパスを取得。
+	outfolder = os.path.join(pwd, "expanded")  # 出力先フォルダのパスの取得。
+	if not os.path.exists(outfolder):  # 出力先フォルダが存在しない時。
+		os.makedirs(outfolder)  # 出力先フォルダを作成。	
 	ctx = XSCRIPTCONTEXT.getComponentContext()  # コンポーネントコンテクストの取得。
 	smgr = ctx.getServiceManager()  # サービスマネージャーの取得。	
 	pathsubstservice = smgr.createInstanceWithContext("com.sun.star.comp.framework.PathSubstitution", ctx)
-	fileurl = pathsubstservice.substituteVariables("$(work)/schematrees", True)
-	outfolder = os.path.normpath(unohelper.fileUrlToSystemPath(fileurl))
-	if not os.path.exists(outfolder):
-		os.makedirs(outfolder)
-	fileurl = pathsubstservice.substituteVariables("$(inst)/share/registry", True)
-	xcdpath = os.path.normpath(unohelper.fileUrlToSystemPath(fileurl))
-	os.chdir(xcdpath)
-	trees = {} 
-	for filename in glob.iglob("*.xcd"):
-		trees[filename] = ElementTree.parse(filename)
+	fileurl = pathsubstservice.substituteVariables("$(inst)/share/registry", True)  # xcdファイルのあるフォルダのfileurlを取得。
+	xcdpath = os.path.normpath(unohelper.fileUrlToSystemPath(fileurl))  # xcdファイルのあるフォルダのパスを出力。
+	os.chdir(xcdpath)  # xcdファイルのあるフォルダに移動。
+	trees = {i:ElementTree.parse(i) for i in glob.iglob("*.xcd")}  # キー:xcdファイル名、値: 各ファイルのElementTreeオブジェクト。使用するのはmain.xcdとwriter.xcd、calc.xcdだけだが面倒なのですべてのxcdファイルについてElementTreeを作成している。
 	ns = {"oor": "http://openoffice.org/2001/registry", "xs": "http://www.w3.org/2001/XMLSchema", "xsi": "http://www.w3.org/2001/XMLSchema-instance"}
 	ElementTree.register_namespace("oor", ns["oor"])  # 名前空間の設定。出力する時に使用される。
-	names = "OptionsDialog", "ProtocolHandler", "Addons", "Jobs"
-	root = trees["main.xcd"]
+	names = "OptionsDialog", "ProtocolHandler", "Addons", "Jobs"  # main.xcdにテンプレートノードもコンポーネントノードもあるコンポーネントスキーマノード名。
 	for name in names:
-		xpath = './/oor:component-schema[@oor:name="{}"]/templates'.format(name)  # テンプレートノードを取得するためのXPathを取得。
-		templates = root.find(xpath, ns)  # テンプレートノードを取得。
-		xpath = './/oor:component-schema[@oor:name="{}"]/component'.format(name)  # コンポーネントノードを取得するためのXPathを取得。
-		component = root.find(xpath, ns)  # コンポーネントノードを取得。		
-		x = expandComponentNode(templates, component, ns)
-		with open("{}/{}.xcs".format(outfolder, name), "w", encoding="utf-8") as f:
-			f.write(minidom.parseString(x).toprettyxml())
-	apps = "Writer", "Calc"
+		xpath = './/oor:component-schema[@oor:name="{}"]'.format(name)  # コンポーネントスキーマノードを取得するためのXPath。
+		scheme = trees["main.xcd"].find(xpath, ns)  # コンポーネントスキーマノードを取得。
+		templates = scheme.find("templates", ns)  # テンプレートノードを取得。
+		scheme.remove(templates)  # テンプレートノードを削除。
+		expandTemplates(scheme, templates, ns)  # テンプレートノードを展開する。
+		writeXCS(scheme, outfolder, name)  # xcsファイルとして書き出す。
+	apps = "Writer", "Calc"  # WindowState.xcuを作成するアプリ名。
 	xpath = './/oor:component-schema[@oor:name="WindowState"]/templates'  # テンプレートノードを取得するためのXPathを取得。
-	templates = root.find(xpath, ns)  # テンプレートノードを取得。main.xcdにある。
+	templates = trees["main.xcd"].find(xpath, ns)  # テンプレートノードを取得。main.xcdにある。
 	for app in apps:
 		name = "{}WindowState".format(app)
-		root = trees["{}.xcd".format(app.lower())]
-		xpath = './/oor:component-schema[@oor:name="{}"]/component'.format(name)  # コンポーネントノードを取得するためのXPathを取得。
-		component = root.find(xpath, ns)  # コンポーネントノードを取得。		
-		x = expandComponentNode(templates, component, ns)
-		with open("{}/{}.xcs".format(outfolder, name), "w", encoding="utf-8") as f:
-			f.write(minidom.parseString(x).toprettyxml())
-def expandComponentNode(templates, component, ns):
-	shematreeBuilder(templates, ns)(component)
-	component.set("xmlns:xs", ns["xs"])
-	component.set("xmlns:xsi", ns["xsi"])	
-	return ElementTree.tostring(component, encoding="unicode")
+		tree = trees["{}.xcd".format(app.lower())]  # writer.xcd、calc.xcdのElementTreeを取得。
+		xpath = './/oor:component-schema[@oor:name="{}"]'.format(name)  # コンポーネントスキーマノードを取得するためのXPathを取得。
+		scheme = tree.find(xpath, ns)  # コンポーネントスキーマノードを取得。
+		scheme.remove(scheme.find("templates", ns))  # テンプレートノードを削除。
+		expandTemplates(scheme, templates, ns)  # テンプレートノードを展開する。
+		writeXCS(scheme, outfolder, name)  # xcsファイルとして書き出す。				
+def expandTemplates(scheme, templates, ns):  # テンプレートノードを展開する。
+	shematreeBuilder(templates, ns)(scheme.find("component", ns))  # コンポーネントノードのテンプレートを展開。
+	scheme.set("xmlns:xs", ns["xs"])
+	scheme.set("xmlns:xsi", ns["xsi"])	
+def writeXCS(scheme, outfolder, name):  # xcsファイルとして書き出す。			
+	x = ElementTree.tostring(scheme, encoding="unicode")  # ElementTreeをXML文字列に変換。
+	with open("{}/{}.xml".format(outfolder, name), "w", encoding="utf-8") as f:
+		f.write(minidom.parseString(x).toprettyxml())  # XMLを整形して書き出す。				
 def shematreeBuilder(templates, ns):
 	parentmap = {}  # キー: 子ノード、値: 親ノード、の辞書。再帰をチェックするため。
 	def buildSchemaTree(node):  # component-schemaノードのtempaltesをcomponentに展開する。
@@ -73,6 +72,7 @@ def shematreeBuilder(templates, ns):
 						node.append(subnode)  # サブノードを追加。
 						buildSchemaTree(subnode)  # サブノードについて調べる。
 	return buildSchemaTree
+g_exportedScripts = macro, #マクロセレクターに限定表示させる関数をタプルで指定。
 if __name__ == "__main__":  # オートメーションで実行するとき
 	def automation():  # オートメーションのためにglobalに出すのはこの関数のみにする。
 		import officehelper
