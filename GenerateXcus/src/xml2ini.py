@@ -16,55 +16,60 @@ def main():
 		schema = ElementTree.XML(s)  # ルートノードを取得する。
 		parentmap = {c:p for p in schema.iter() for c in p}  # キー: ノード, 値: 親ノード、の辞書。
 		lines = ["# {}.xcu".format(schema.get("name"))]  # 出力する行のリスト。
-		nodetype = None  # 前のノードのnode-type属性。
-		namescashe = []  # ルートまでのセットノードのname属性のリスト。
-		for n in schema.iter():  # ノードをXMLの上行から順に取得する。
-			tag = n.tag  # タグを取得。
-			name = n.get("name")  # name属性の値を取得。
-			if nodetype is not None:  # 1つ前のノードにnode-type属性がある、つまりsetノードかnode-typeノードの時。
-				if parentmap[n].tag=="set":  # 親ノードがセットノードの時。
-					names = getSetNames(parentmap, n)  # ルートからノードnまでのセットノードのname属性のリストを取得する。
-					if tag=="set":
-						names = names[:-1]  # 自身がセットノードの時はそのname属性は除く。
-					r = "" if namescashe and len(names)>len(namescashe) and all(map(lambda x, y: x==y, namescashe, names)) else "\n"  # 階層を深くなった時はセクションの前は改行しない。all([])はTrueになる。
-					namescashe = names.copy()  # 次に比較するためにnamesをキャッシュしておく。
-					lines.append("{}[{} set1]".format(r, " ".join(names)))  # セットノードname属性はセクションとして出力する。
-					lines.append("# nodetype={}".format(nodetype))		
-			if tag=="group" and n in parentmap and parentmap[n].tag=="set":  # セットノードの子要素のgroupノードのみ。
-				extensible = True if n.get("extensible")=="true" else False
-				if extensible:
-					lines.append("# extensible props {}".format(name))
-					lines.append("# type name1 = ")
-				else:
-					lines.append("{} group name = ".format(name))
-			elif tag=="prop":
-				proptype = n.get("type")
-				proptype = '{}:'.format(proptype) if proptype else ""
-				nillable = 'nonnillable' if n.get("nillable")=="false" else "" 
-				localized = 'localizable' if n.get("localized")=="true" else "" 
-				comment = proptype, nillable, localized
-				if any(comment):
-					lines.append(" ".join(["#", *comment]))
-				txt = str(n[0].text) if len(n) else ""  # テキストノードに整数が入っていると整数型になるのでテキスト型にする。
-				lines.append(" ".join([name, "=", txt]))
-			elif tag=="set" and len(n)==0:  # セットノードかつ子ノードがない時。つまり再帰ノードの時。
-				names = getSetNames(parentmap, n)  # ルートからノードnまでのセットノードのname属性のリストを取得する。
-				lines.append(" ".join(["[", *names, "set1 ]"]))							
-				lines.append("# {} node-type={}".format(n.get("name"), n.get("node-type")))	
-			nodetype = n.get("node-type")  # node-type属性がないときはNoneが入る。
+		lines.append("# The path prefixed with '+' in section must be changed to user defined name.")
+		nodeToini = nodeToiniCreator(lines, parentmap)
+		nodeToini(schema)
 		s = "\n".join(lines)
 		print(s)	
 		print("\n\n")
 		filename = ".".join([i.rsplit(".", 1)[0], "ini"])
 		with open(os.path.join(outfolder, filename), "w", encoding="utf-8") as f:
-			f.write(s)  	
-def getSetNames(parentmap, n):  # ルートからノードnまでのセットノードのname属性のリストを取得する。
-	names = []  # ルートまでのセットノードのname属性を入れるリスト。
-	c = n
-	while c in parentmap:  # 親ノードがある間。
-		if c.tag=="set":  # セットノードの時。
-			names.append(c.get("name"))
-		c = parentmap[c]  # 親ノードについて調べる。	
-	return names[::-1]  # ルートノードからの順にして返す。
+			f.write(s)  			
+def nodeToiniCreator(lines, parentmap):
+	steps = []
+	nodetype = ""
+	locale = "ja"
+	def nodeToini(node):
+		nonlocal nodetype
+		tag = node.tag
+		name = node.get("name")
+		if tag=="set":
+			if parentmap[node].tag=="set":
+				steps.append("".join(["+", name]))	
+			else:
+				steps.append(name)
+			if len(node)==0:
+				subnodetype = node.get("node-type")
+				lines.append("# node-type={}".format(subnodetype))
+				lines.append("[{}]".format("/".join([*steps, "+{}".format(subnodetype)])))
+				return
+			else:
+				nodetype = node.get("node-type")
+				lines.append("")
+		elif tag=="group":
+			if parentmap[node].tag=="set":
+				steps.append("".join(["+", name]))	
+				lines.append("# node-type={}".format(nodetype))
+				lines.append("[{}]".format("/".join(steps)))
+		elif tag=="prop":
+			proptype = node.get("type")
+			proptype = '{}:'.format(proptype) if proptype else ""
+			nillable = 'nonnillable' if node.get("nillable")=="false" else "" 
+			localized = 'localizable' if node.get("localized")=="true" else "" 
+			comment = proptype, nillable, localized
+			if any(comment):
+				lines.append(" ".join(["#", *comment]))		
+				txt = str(node[0].text) if len(node) else ""  # テキストノードに整数が入っていると整数型になるのでテキスト型にする。
+				lines.append(" ".join([name, "=", txt]))	
+			if localized:
+				lines.append(" ".join([name, locale, "=", txt]))	
+			return	
+		elif tag=="node-ref":
+			lines.append("# {}".format(name))	
+		for child in node:
+			nodeToini(child)	
+		else:
+			steps.clear()	
+	return nodeToini
 if __name__ == "__main__":  # オートメーションで実行するとき
 	main()
