@@ -60,6 +60,8 @@ def nodeToiniCreator(lines, parentmap):
 				lines.append(" ".join(["#", *comment]))		
 				txt = str(node[0].text) if len(node) else ""  # テキストノードに整数が入っていると整数型になるのでテキスト型にする。
 				lines.append(" ".join([name, "=", txt]))	
+				
+				
 			return	
 		elif tag=="node-ref":
 			lines.append("# {}".format(name))	
