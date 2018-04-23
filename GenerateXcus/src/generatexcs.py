@@ -5,7 +5,9 @@ import os, glob, re
 from xml.etree import ElementTree
 from xml.dom import minidom
 def macro(documentevent=None):  # 引数は文書のイベント駆動用。
-	pwd = os.path.dirname(os.path.abspath(__file__))  # このスクリプトのあるフォルダのパスを取得。
+	modulepath = __file__ 
+	filepath = unohelper.fileUrlToSystemPath(modulepath) if modulepath.startswith("file://") else modulepath # オートメーションの時__file__はシステムパスだが、マクロセレクターから実行するとfileurlが返ってくる。
+	pwd = os.path.dirname(os.path.abspath(filepath))  # このスクリプトのあるフォルダのパスを取得。
 	outfolder = os.path.join(pwd, "xcs")  # 出力先フォルダのパスの取得。
 	if not os.path.exists(outfolder):  # 出力先フォルダが存在しない時。
 		os.makedirs(outfolder)  # 出力先フォルダを作成。	
