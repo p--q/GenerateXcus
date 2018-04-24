@@ -12,14 +12,15 @@ def main():
 	for i in glob.iglob("*.xml"):
 		with open(i, encoding="utf-8") as f:
 			s = f.read()  # ファイルの文字列を取得する。
-		s = s.replace("oor:", "").replace("xs:", "").replace("xsi:", "").replace("xml:", "")  # 名前空間の接頭辞をすべて削除する。
+		s = s.replace("oor:", "oor--").replace("xs:", "xs--").replace("xsi:", "xsi--").replace("xml:", "xml--")  # 名前空間の接頭辞を置換する。
 		schema = ElementTree.XML(s)  # ルートノードを取得する。
 		parentmap = {c:p for p in schema.iter() for c in p}  # キー: ノード, 値: 親ノード、の辞書。
-		lines = ["# {}.xcu".format(schema.get("name"))]  # 出力する行のリスト。
+		lines = ["# {}.xcu".format(schema.get("oor--name"))]  # 出力する行のリスト。
 		lines.append("# The path prefixed with '+' in section must be changed to user defined name.")
 		nodeToini = nodeToiniCreator(lines, parentmap)
 		nodeToini(schema)
 		s = "\n".join(lines)
+		s = s.replace("oor--", "oor:").replace("xs--", "xs:").replace("xsi--", "xsi:").replace("xml--", "xml:")  # 名前空間の接頭辞を元に戻す。
 		print(s)	
 		print("\n\n")
 		filename = ".".join([i.rsplit(".", 1)[0], "ini"])
@@ -28,23 +29,23 @@ def main():
 def nodeToiniCreator(lines, parentmap):
 	steps = []
 	nodetype = ""
-	locale = "ja"
+	locales = "ja",
 	def nodeToini(node):
 		nonlocal nodetype
 		tag = node.tag
-		name = node.get("name")
+		name = node.get("oor--name")
 		if tag=="set":
 			if parentmap[node].tag=="set":
 				steps.append("".join(["+", name]))	
 			else:
 				steps.append(name)
 			if len(node)==0:
-				subnodetype = node.get("node-type")
+				subnodetype = node.get("oor--node-type")
 				lines.append("# node-type={}".format(subnodetype))
 				lines.append("[{}]".format("/".join([*steps, "+{}".format(subnodetype)])))
 				return
 			else:
-				nodetype = node.get("node-type")
+				nodetype = node.get("oor--node-type")
 				lines.append("")
 		elif tag=="group":
 			if parentmap[node].tag=="set":
@@ -52,17 +53,19 @@ def nodeToiniCreator(lines, parentmap):
 				lines.append("# node-type={}".format(nodetype))
 				lines.append("[{}]".format("/".join(steps)))
 		elif tag=="prop":
-			proptype = node.get("type")
-			proptype = '{}:'.format(proptype) if proptype else ""
-			nillable = 'nonnillable' if node.get("nillable")=="false" else "" 
-			localized = 'localizable' if node.get("localized")=="true" else "" 
+			if not steps:  # セットノードが上にないpropノードはセクションがないので/セクションを付ける。
+				steps.append("/")	
+			proptype = node.get("oor--type") or ""
+			nillable = 'nonnillable' if node.get("oor--nillable")=="false" else "" 
+			localized = 'localizable' if node.get("oor--localized")=="true" else "" 
 			comment = proptype, nillable, localized
 			if any(comment):
 				lines.append(" ".join(["#", *comment]))		
-				txt = str(node[0].text) if len(node) else ""  # テキストノードに整数が入っていると整数型になるのでテキスト型にする。
-				lines.append(" ".join([name, "=", txt]))	
+			txt = str(node[0].text) if len(node) else ""  # テキストノードに整数が入っていると整数型になるのでテキスト型にする。
+			lines.append(" ".join([name, "=", txt]))	
 			if localized:
-				lines.append(" ".join([name, locale, "=", txt]))	
+				for locale in locales:
+					lines.append("{} {}= {} ".format(name, locale, txt))	
 			return	
 		elif tag=="node-ref":
 			lines.append("# {}".format(name))	
