@@ -9,18 +9,22 @@ def main():
 		os.makedirs(outfolder)  # 出力先フォルダを作成。	
 	xcsfolder = os.path.join(pwd, "xml")  # ソースフォルダのパスの取得。
 	os.chdir(xcsfolder)  # xmlファイルのあるフォルダに移動。
+	ns = {"oor": "http://openoffice.org/2001/registry", "xs": "http://www.w3.org/2001/XMLSchema", "xsi": "http://www.w3.org/2001/XMLSchema-instance", "xml": "http://www.w3.org/XML/1998/namespace"}  # 出てくる名前空間すべて。このスクリプトで使うのはキーのみ。
+	nskeys = {"{}:".format(i): "{}--".format(i) for i in ns.keys()}  # キー: 置換前の名前空間のキー、値: 置換後の名前空間のキー。
 	for i in glob.iglob("*.xml"):
 		with open(i, encoding="utf-8") as f:
 			s = f.read()  # ファイルの文字列を取得する。
-		s = s.replace("oor:", "oor--").replace("xs:", "xs--").replace("xsi:", "xsi--").replace("xml:", "xml--")  # 名前空間の接頭辞を置換する。
+		for k, v in nskeys.items():  # 名前空間のキーについて。
+			s = s.replace(k, v)  # 名前空間の処理は面倒なので一時的に名前空間の接頭辞を置換して、名前空間を無効にする。		
 		schema = ElementTree.XML(s)  # ルートノードを取得する。
 		parentmap = {c:p for p in schema.iter() for c in p}  # キー: ノード, 値: 親ノード、の辞書。
 		lines = ["# {}.xcu".format(schema.get("oor--name"))]  # 出力する行のリスト。
-		lines.append("# The path prefixed with '+' in section must be changed to user defined name.")
+		lines.append("# The path prefixed with '++' in section must be changed to user defined name.")
 		nodeToini = nodeToiniCreator(lines, parentmap)
 		nodeToini(schema)
 		s = "\n".join(lines)
-		s = s.replace("oor--", "oor:").replace("xs--", "xs:").replace("xsi--", "xsi:").replace("xml--", "xml:")  # 名前空間の接頭辞を元に戻す。
+		for k, v in nskeys.items():  # 名前空間の接頭辞を元に戻す。
+			s = s.replace(v, k)			
 		print(s)	
 		print("\n\n")
 		filename = ".".join([i.rsplit(".", 1)[0], "ini"])
@@ -36,20 +40,20 @@ def nodeToiniCreator(lines, parentmap):
 		name = node.get("oor--name")
 		if tag=="set":
 			if parentmap[node].tag=="set":
-				steps.append("".join(["+", name]))	
+				steps.append("".join(["++", name]))	
 			else:
 				steps.append(name)
 			if len(node)==0:
 				subnodetype = node.get("oor--node-type")
 				lines.append("# node-type={}".format(subnodetype))
-				lines.append("[{}]".format("/".join([*steps, "+{}".format(subnodetype)])))
+				lines.append("[{}]".format("/".join([*steps, "++{}".format(subnodetype)])))
 				return
 			else:
 				nodetype = node.get("oor--node-type")
 				lines.append("")
 		elif tag=="group":
 			if parentmap[node].tag=="set":
-				steps.append("".join(["+", name]))	
+				steps.append("".join(["++", name]))	
 				lines.append("# node-type={}".format(nodetype))
 				lines.append("[{}]".format("/".join(steps)))
 		elif tag=="prop":
