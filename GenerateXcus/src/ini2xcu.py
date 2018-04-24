@@ -48,6 +48,10 @@ def main():
 		with open(os.path.join(outfolder, filename), "w", encoding="utf-8") as f:
 			f.write(minidom.parseString(x).toprettyxml())  # XMLを整形して書き出す。				
 def iniToxcuCreator(config, parentmap):
+	
+	
+	
+	
 	steps = []
 	nodetype = ""
 	locales = "ja",
