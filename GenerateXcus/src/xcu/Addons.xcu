@@ -1,5 +1,4 @@
-<?xml version="1.0" ?>
-<oor:component-data oor:name="Addons" oor:package="org.openoffice.Office" xmlns:oor="http://openoffice.org/2001/registry" xmlns:xml="http://www.w3.org/XML/1998/namespace" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<oor:component-data oor:name="Addons" oor:package="org.openoffice.Office" xmlns:oor="http://openoffice.org/2001/registry" xmlns:xs="http://www.w3.org/2001/XMLSchema">
 	<group oor:name="AddonUI">
 		<set oor:name="AddonMenu" oor:node-type="MenuItem">
 			<group oor:name="MenuItem">

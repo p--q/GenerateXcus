@@ -25,30 +25,28 @@ def main():
 		data = createElem("oor--component-data")
 		for i in ns.keys():  # 名前空間の接頭辞を置換する。
 			s = s.replace("{}:".format(i), "{}--".format(i))
-			data.set("xmlns:{}".format(i), ns[i])
+			data.set("xmlns:{}".format(i), ns[i])  # minidomで足りない名前空間があるとパースできないのですべて追加しておく。
 		schema = ElementTree.XML(s)  # ルートノードを取得する。	
+		[data.set(k, v) for k, v in schema.items() if not "xml--lang" in k]		
 		component = schema.find("component")
 		data.extend([i for i in component])
 		parentmap = {c:p for p in data.iter() for c in p}  # キー: ノード, 値: 親ノード、の辞書。
-# 		iniToxcu = iniToxcuCreator(config, parentmap)
-# 		iniToxcu(data)		
-		[data.set(k, v) for k, v in schema.items() if not "xml--lang" in k]		
+		iniToxcu = iniToxcuCreator(config, parentmap)
+		iniToxcu(data)		
 		x = ElementTree.tostring(data, encoding="unicode")  # ElementTreeをXML文字列に変換。
 		x = re.sub(r'(?<=>)\s+?(?=<)', "", x)  # 空文字だけのtextとtailを削除してすでにあるインデントをリセットする。
-		xmlns = []
+		nskeys = set(ns.keys())
 		for i in ns.keys():  # 名前空間の接頭辞を元に戻す。
 			prefix = "{}--".format(i)
 			if prefix in x:
 				x = x.replace(prefix, "{}:".format(i))	
-					
-				xmlns.append(i)
-		dom = minidom.parseString(x)
-		
-		
-				
+				nskeys.remove(i)	
+		document = minidom.parseString(x)
+		root = document.documentElement
+		[root.removeAttribute("xmlns:{}".format(i)) for i in nskeys]  # 使われていない名前空間を削除する。
 		filename = ".".join([name, "xcu"])
 		with open(os.path.join(outfolder, filename), "w", encoding="utf-8") as f:
-			f.write(dom.toprettyxml())  # XMLを整形して書き出す。				
+			f.write(root.toprettyxml())  # XMLを整形して書き出す。				
 def iniToxcuCreator(config, parentmap):
 	steps = []
 	nodetype = ""
