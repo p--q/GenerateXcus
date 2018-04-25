@@ -1,6 +1,7 @@
 #!/opt/libreoffice5.4/program/python
 # -*- coding: utf-8 -*-
 import os, glob, sys, re
+from copy import copy
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 from configparser import ConfigParser
@@ -12,7 +13,7 @@ def main():
 		os.makedirs(outfolder)  # 出力先フォルダを作成。	
 	inifolder = os.path.join(pwd, "ini")  # ソースフォルダのパスの取得。
 	os.chdir(inifolder)  # iniファイルのあるフォルダに移動。
-	inidic = {i.rsplit(".", 1)[0]: ConfigParser().read(i) for i in glob.iglob("*.ini")}
+	inidic = {i.rsplit(".", 1)[0]: createConfigParser(i) for i in glob.iglob("*.ini")}
 	ns = {"oor": "http://openoffice.org/2001/registry", "xs": "http://www.w3.org/2001/XMLSchema", "xsi": "http://www.w3.org/2001/XMLSchema-instance", "xml": "http://www.w3.org/XML/1998/namespace"}  # 出てくる名前空間すべて。
 	defaultns = "xml", "html", "rdf", "wsdl", "xs", "xsi", "dc"  # ElementTreeのデフォルトの名前空間。tostring()で属性として出力されない。
 	nskeys = {"{}:".format(i): "{}--".format(i) for i in ns.keys()}  # キー: 置換前の名前空間のキー、値: 置換後の名前空間のキー。
@@ -48,17 +49,19 @@ def main():
 		x = ElementTree.tostring(data, encoding="unicode")  # コンポーネントデータノードのElementTreeをXML文字列に変換。
 		filename = ".".join([name, "xcu"])
 		with open(os.path.join(outfolder, filename), "w", encoding="utf-8") as f:
-			f.write(minidom.parseString(x).toprettyxml())  # XMLを整形して書き出す。				
+			f.write(minidom.parseString(x).toprettyxml())  # XMLを整形して書き出す。
+def createConfigParser(filepath):
+	config = ConfigParser()
+	config.read(filepath)
+	return config	
 def iniToxcuCreator(config, parentmap):
-	
-	
-	
+	splitsections = [i.split("/") for i in config.sections()]
 	
 	steps = []
-	nodetype = ""
-	locales = "en-US", "ja",
+# 	nodetype = ""
+	locales = "en-US", "ja-JP",
 	def iniToxcu(node):
-		nonlocal nodetype
+# 		nonlocal nodetype
 		tag = node.tag
 		name = node.get("oor--name")
 		if tag=="set":
@@ -75,32 +78,122 @@ def iniToxcuCreator(config, parentmap):
 				nodetype = node.get("oor--node-type")
 # 				lines.append("")
 		elif tag=="group":
-			if parentmap[node].tag=="set":
-				steps.append("".join(["++", name]))	
+			c = len(steps) + 1
+			for splitsection in splitsections:
+				if c==len(splitsection):
+					if all(map(lambda x, y: x==y, steps, splitsection)):
+						newnode = copy(node)
+						newnode.tag = "node"
+						newnode.set("oor--name", splitsection[-1])
+						parentmap[node].append(newnode)
+						steps.append(splitsection[-1])
+						for child in newnode:
+							iniToxcu(child)	
+
+			
+			
+			
+# 			if parentmap[node].tag=="set":
+# 				steps.append("".join(["++", name]))	
 # 				lines.append("# node-type={}".format(nodetype))
 # 				lines.append("[{}]".format("/".join(steps)))
 		elif tag=="prop":
-			if not steps:  # セットノードが上にないpropノードはセクションがないので/セクションを付ける。
-				steps.append("/")	
-			proptype = node.get("oor--type") or ""
-			nillable = 'nonnillable' if node.get("oor--nillable")=="false" else "" 
-			localized = 'localizable' if node.get("oor--localized")=="true" else "" 
-			comment = proptype, nillable, localized
-# 			if any(comment):
-# 				lines.append(" ".join(["#", *comment]))		
-# 			txt = str(node[0].text) if len(node) else ""  # テキストノードに整数が入っていると整数型になるのでテキスト型にする。
-# 			lines.append(" ".join([name, "=", txt]))	
-# 			if localized:
-# 				for locale in locales:
-# 					lines.append("{} {}= {} ".format(name, locale, txt))	
+			section = "/".join(steps)
+			if not "++" in section:
+				if node.get("oor--localized")=="true":
+					node.attrib.pop("oor--localized", None)
+					for locale in locales:
+						value = config[section][" ".join([name, locale])]
+						if value:
+							valuenode = node.find("./value[@xml--lang='{}']".format(locale))
+							if valuenode:
+								valuenode.text = value
+							else:
+								node.append(createElem("value", {"xml--lang": locale}, text=value))
+				elif name in config[section]:
+					value = config[section][name]
+					if node.get("oor--nillable")=="false" and node[0].text==value:
+						parentmap[node].remove(node)
+					elif value:
+						if len(node):
+							node.apppend(createElem("value", text=value))
+						else:
+							node[0].text = value
+				node.attrib.pop("oor--nillable", None)
+				node.attrib.pop("type", None)	
 			return	
-# 		elif tag=="node-ref":
-# 			lines.append("# {}".format(name))	
+		elif tag=="node-ref":
+			node.tag = "node"
+			node.attrib.pop("oor--node-type", None)
+			
+			
+			subnodetype = node.get("oor--node-type")
+# 			lines.append("# node-type={}".format(subnodetype))			
+# 			lines.append("[{}]".format("/".join([*steps, name])))
+
+
 		for child in node:
 			iniToxcu(child)	
 		else:
 			steps.clear()	
-	return iniToxcu			
+	return iniToxcu
+			
+							
+# def iniToxcuCreator(config, parentmap):
+# 	
+# 	
+# 	
+# 	
+# 	steps = []
+# 	nodetype = ""
+# 	locales = "en-US", "ja",
+# 	def iniToxcu(node):
+# 		nonlocal nodetype
+# 		tag = node.tag
+# 		name = node.get("oor--name")
+# 		if tag=="set":
+# 			if parentmap[node].tag=="set":
+# 				steps.append("".join(["++", name]))	
+# 			else:
+# 				steps.append(name)
+# 			if len(node)==0:
+# 				subnodetype = node.get("oor--node-type")
+# # 				lines.append("# node-type={}".format(subnodetype))
+# # 				lines.append("[{}]".format("/".join([*steps, "++{}".format(subnodetype)])))
+# 				return
+# 			else:
+# 				nodetype = node.get("oor--node-type")
+# # 				lines.append("")
+# 		elif tag=="group":
+# 			if parentmap[node].tag=="set":
+# 				steps.append("".join(["++", name]))	
+# # 				lines.append("# node-type={}".format(nodetype))
+# # 				lines.append("[{}]".format("/".join(steps)))
+# 		elif tag=="prop":
+# 			if not steps:  # セットノードが上にないpropノードはセクションがないので/セクションを付ける。
+# 				steps.append("/")	
+# 			proptype = node.get("oor--type") or ""
+# 			nillable = 'nonnillable' if node.get("oor--nillable")=="false" else "" 
+# 			localized = 'localizable' if node.get("oor--localized")=="true" else "" 
+# 			comment = proptype, nillable, localized
+# # 			if any(comment):
+# # 				lines.append(" ".join(["#", *comment]))		
+# # 			txt = str(node[0].text) if len(node) else ""  # テキストノードに整数が入っていると整数型になるのでテキスト型にする。
+# # 			lines.append(" ".join([name, "=", txt]))	
+# # 			if localized:
+# # 				for locale in locales:
+# # 					lines.append("{} {}= {} ".format(name, locale, txt))	
+# 			return	
+# # 		elif tag=="node-ref":
+# # 			lines.append("# {}".format(name))	
+# 		for child in node:
+# 			iniToxcu(child)	
+# 		else:
+# 			steps.clear()	
+# 	return iniToxcu		
+
+
+	
 def createElem(tag, attrib={},  **kwargs):  # ET.Elementのアトリビュートのtextとtailはkwargsで渡す。		
 	txt = kwargs.pop("text", None)
 	tail = kwargs.pop("tail", None)

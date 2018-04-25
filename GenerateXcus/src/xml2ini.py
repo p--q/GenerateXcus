@@ -4,7 +4,7 @@ import os, glob
 from xml.etree import ElementTree
 def main():
 	pwd = os.path.dirname(os.path.abspath(__file__))  # このスクリプトのあるフォルダのパスを取得。
-	outfolder = os.path.join(pwd, "ini")  # 出力先フォルダのパスの取得。
+	outfolder = os.path.join(pwd, "ini", "template")  # 出力先フォルダのパスの取得。
 	if not os.path.exists(outfolder):  # 出力先フォルダが存在しない時。
 		os.makedirs(outfolder)  # 出力先フォルダを作成。	
 	xcsfolder = os.path.join(pwd, "xml")  # ソースフォルダのパスの取得。
@@ -35,7 +35,7 @@ def main():
 def nodeToiniCreator(lines, parentmap):
 	steps = []
 	nodetype = ""
-	locales = "en-US", "ja",
+	locales = "en-US", "ja-JP",
 	def nodeToini(node):
 		nonlocal nodetype
 		tag = node.tag
@@ -67,7 +67,7 @@ def nodeToiniCreator(lines, parentmap):
 			comment = proptype, nillable, localized
 			if any(comment):
 				lines.append(" ".join(["#", *comment]))		
-			txt = str(node[0].text) if len(node) and node[0].text else ""  # テキストノードに整数が入っていると整数型になるのでテキスト型にする。	
+			txt = str(node[0].text) if len(node) else ""  # 子要素(valueノード)に整数が入っていると整数型になるのでテキスト型にする。<value/>のときはNoneを返す。	
 			if localized:
 				[lines.append("{} {}= {} ".format(name, locale, txt)) for locale in locales]	
 			else:
