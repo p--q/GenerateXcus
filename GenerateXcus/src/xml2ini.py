@@ -20,6 +20,8 @@ def main():
 		parentmap = {c:p for p in schema.iter() for c in p}  # キー: ノード, 値: 親ノード、の辞書。
 		lines = ["# {}.xcu".format(schema.get("oor--name"))]  # 出力する行のリスト。
 		lines.append("# The path prefixed with '++' in section must be changed to user defined name.")
+		lines.append("# The [DEFAULT](case sensitive) section has special meaning in configparser.")
+		lines.append("")
 		nodeToini = nodeToiniCreator(lines, parentmap)
 		nodeToini(schema)
 		s = "\n".join(lines)
@@ -33,7 +35,7 @@ def main():
 def nodeToiniCreator(lines, parentmap):
 	steps = []
 	nodetype = ""
-	locales = "ja",
+	locales = "en-US", "ja",
 	def nodeToini(node):
 		nonlocal nodetype
 		tag = node.tag
@@ -65,14 +67,16 @@ def nodeToiniCreator(lines, parentmap):
 			comment = proptype, nillable, localized
 			if any(comment):
 				lines.append(" ".join(["#", *comment]))		
-			txt = str(node[0].text) if len(node) else ""  # テキストノードに整数が入っていると整数型になるのでテキスト型にする。
-			lines.append(" ".join([name, "=", txt]))	
+			txt = str(node[0].text) if len(node) and node[0].text else ""  # テキストノードに整数が入っていると整数型になるのでテキスト型にする。	
 			if localized:
-				for locale in locales:
-					lines.append("{} {}= {} ".format(name, locale, txt))	
+				[lines.append("{} {}= {} ".format(name, locale, txt)) for locale in locales]	
+			else:
+				lines.append(" ".join([name, "=", txt]))	
 			return	
 		elif tag=="node-ref":
-			lines.append("# {}".format(name))	
+			subnodetype = node.get("oor--node-type")
+			lines.append("# node-type={}".format(subnodetype))			
+			lines.append("[{}]".format("/".join([*steps, name])))
 		for child in node:
 			nodeToini(child)	
 		else:

@@ -14,9 +14,9 @@ def main():
 	os.chdir(inifolder)  # iniファイルのあるフォルダに移動。
 	inidic = {i.rsplit(".", 1)[0]: ConfigParser().read(i) for i in glob.iglob("*.ini")}
 	ns = {"oor": "http://openoffice.org/2001/registry", "xs": "http://www.w3.org/2001/XMLSchema", "xsi": "http://www.w3.org/2001/XMLSchema-instance", "xml": "http://www.w3.org/XML/1998/namespace"}  # 出てくる名前空間すべて。
+	defaultns = "xml", "html", "rdf", "wsdl", "xs", "xsi", "dc"  # ElementTreeのデフォルトの名前空間。tostring()で属性として出力されない。
 	nskeys = {"{}:".format(i): "{}--".format(i) for i in ns.keys()}  # キー: 置換前の名前空間のキー、値: 置換後の名前空間のキー。
-	for i in ns.keys():
-		ElementTree.register_namespace(i, ns[i])  # 名前空間の設定。名前空間のあるElementTreeを文字列に出力する時にデフォルト以外の名前空間の出力に必要。本当に必要なのはデフォルトの名前空間以外のみ。
+	[ElementTree.register_namespace(i, ns[i]) for i in ns.keys()]  # 名前空間の設定。名前空間のあるElementTreeを文字列に出力する時にデフォルト以外の名前空間の出力に必要。本当に必要なのはデフォルトの名前空間以外のみ。
 	for name, config in inidic.items():
 		schemafile = os.path.join(pwd, "xml", "{}.xml".format(name))
 		if os.path.exists(schemafile):
@@ -39,10 +39,12 @@ def main():
 		for k, v in nskeys.items():  # コンポーネントスキーマノードの名前空間の接頭辞を元に戻す。
 			if v in x:  # 元に戻す名前空間の接頭辞がある時。
 				x = x.replace(v, k)	
-				data.set("xmlns:{}".format(k[:-1]), ns[k[:-1]])  # 使用している名前空間のみコンポーネントデータノードの属性に追加。
+				n = k[:-1]  # 名前空間のキーを取得。
+				if n in defaultns:  # ElementTreeのデフォルトの名前空間の時。
+					data.set("xmlns:{}".format(n), ns[n])  # 使用している名前空間のみコンポーネントデータノードの属性に追加。
 		schema = ElementTree.XML(x)  # 名前空間を設定したXML文字列をElementTreeにする。	
 		[data.set(k, v) for k, v in schema.items()]  # コンポーネントスキーマノードのルートの属性をコンポーネントデータノードのルートにコピーする。
-		data.extend([i for i in schema.find("component")])  # コンポーネントスキーマノードのcomponentノードの子要素をコンポーネントデータノードのルートの子要素に追加する。	
+		data.extend(i for i in schema[0])  # コンポーネントスキーマノードの子要素(元のcomponentノード）の子要素をコンポーネントデータノードのルートの子要素に追加する。	
 		x = ElementTree.tostring(data, encoding="unicode")  # コンポーネントデータノードのElementTreeをXML文字列に変換。
 		filename = ".".join([name, "xcu"])
 		with open(os.path.join(outfolder, filename), "w", encoding="utf-8") as f:
@@ -54,7 +56,7 @@ def iniToxcuCreator(config, parentmap):
 	
 	steps = []
 	nodetype = ""
-	locales = "ja",
+	locales = "en-US", "ja",
 	def iniToxcu(node):
 		nonlocal nodetype
 		tag = node.tag
