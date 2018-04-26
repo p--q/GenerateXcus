@@ -60,9 +60,9 @@ def nodeToiniCreator(lines, parentmap):
 					for child in node:  # 子要素について再帰。
 						nodeToini(child)	
 				lines.append("# For extensible nodes, type specification is required.")  # 例をコメントに出力。		
-				lines.append("# string propname = value")  # 例をコメントに出力。
-				lines.append("# boolean propname = value")  # 例をコメントに出力。
-				lines.append("# int propname = value")  # 例をコメントに出力。
+				lines.append("# xs:string propname = value")  # 例をコメントに出力。
+				lines.append("# xs:boolean propname = value")  # 例をコメントに出力。
+				lines.append("# xs:int propname = value")  # 例をコメントに出力。
 			if parentmap[node].tag=="set":  # 親ノードがセットノードの時。
 				steps.append("".join(["++", name]))	 # セットノードの子要素のoor:nameはユーザー定義になる。
 				lines.append("# node-type={}".format(nodetype))  # ノードタイプをコメントに出力。

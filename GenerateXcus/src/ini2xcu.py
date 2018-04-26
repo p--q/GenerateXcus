@@ -78,19 +78,19 @@ def iniToxcuCreator(config, parentmap):
 					newnode.set("oor--name", splitsection[-1])
 					newnode.set("oor--op", "replace")
 					newnode.attrib.pop("oor--node-type", None)  # セットノードとnode-refノードの時のため。
-					
-					
 					if node.get("oor--extensible")=="true":
 						section = "/".join(steps)
 						if section in config:
-							for prop in config[section]:
-								
-							
-							
-			
-					
-					
-					
+							propnames = config[section].keys()
+							for propname in propnames:
+								if propname.startswith("xs--"):  # xs:で始まるprop名が追加されたprop。
+									newtype, newname = propname.split(" ", 1)
+									
+									
+									newnode = createElem("prop", {"oor--name": newname, "oor--type": newtype})
+									node.append(newnode)
+									config[section][newname] = config[section][propname]
+									config[section].pop(propname, None)		
 					parentmap[node].append(newnode)			
 					for child in newnode:
 						iniToxcu(child)	
