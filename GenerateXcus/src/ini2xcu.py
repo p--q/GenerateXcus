@@ -58,57 +58,62 @@ def createConfigParser(filepath):
 	config.read(filepath)
 	return config	
 def iniToxcuCreator(config, parentmap):
-	splitsections = [i.split("/") for i in config.sections()]
-	
+	splitsections = [i.split("/") for i in config.sections() if "/++" not in i]  # セクションを/区切りでリストにする。ユーザー未定義の名前があるセクションは除く。
 	steps = []
-# 	nodetype = ""
 	locales = "en-US", "ja-JP",
 	def iniToxcu(node):
-# 		nonlocal nodetype
-		tag = node.tag
-		name = node.get("oor--name")
-		if tag=="set":
-			if parentmap[node].tag=="set":
-				steps.append("".join(["++", name]))	
-			else:
-				steps.append(name)
-			if len(node)==0:
-				subnodetype = node.get("oor--node-type")
-# 				lines.append("# node-type={}".format(subnodetype))
-# 				lines.append("[{}]".format("/".join([*steps, "++{}".format(subnodetype)])))
-				return
-			else:
-				nodetype = node.get("oor--node-type")
-# 				lines.append("")
-		elif tag=="group":
-			c = len(steps) + 1
-			for splitsection in splitsections:
-				if c==len(splitsection):
-					if all(map(lambda x, y: x==
-							y, steps, splitsection)):
-						newnode = copy(node)
-						newnode.tag = "node"
-						newnode.set("oor--name", splitsection[-1])
-						parentmap[node].append(newnode)
-						steps.append(splitsection[-1])
-						for child in newnode:
-							iniToxcu(child)	
+		
+			
+		
 
+		
+		
+		if node in parentmap and parentmap[node].tag=="set":  # セットノードの子ノードの時。
+			parentpath = "/".join(steps)  # 親ノードのパスを取得。
+			for splitsection in splitsections:  # すべてのsplitsectionについて。
+				if parentpath=="/".join(splitsection[:-1]):  # 親ノードのパスが一致する時。
+					steps.append(splitsection[-1])  # stepsに名前を追加。
+					newnode = copy(node)  # 新しいノードを取得。
+					newnode.tag = "node"
+					newnode.set("oor--name", splitsection[-1])
+					newnode.set("oor--op", "replace")
+					newnode.attrib.pop("oor--node-type", None)  # セットノードとnode-refノードの時のため。
+					
+					
+					if node.get("oor--extensible")=="true":
+						section = "/".join(steps)
+						if section in config:
+							for prop in config[section]:
+								
+							
+							
 			
-			
-			
-# 			if parentmap[node].tag=="set":
-# 				steps.append("".join(["++", name]))	
-# 				lines.append("# node-type={}".format(nodetype))
-# 				lines.append("[{}]".format("/".join(steps)))
-		elif tag=="prop":  # propノードの時。
-			section = "/".join(steps)  # パスの要素を結合。
-			if not "++" in section:  # ユーザー未定義のパスの要素がないときのみ。
+					
+					
+					
+					parentmap[node].append(newnode)			
+					for child in newnode:
+						iniToxcu(child)	
+					else:
+						steps.clear()
+		else:  # セットノードの子ノードではない時。
+			tag = node.tag
+			name = node.get("oor--name")
+			if tag in ("set", "group", "node-ref"):							
+				steps.append(name)
+				node.tag = "node"
+				node.attrib.pop("oor--node-type", None)	
+				
+				
+									
+			elif tag=="prop":  # propノードの時。
+				parentpath = "/".join(steps)  # 親ノードのパスを取得。これがセクション名になる。
+				
+				
 				if node.get("oor--localized")=="true":  # 地域化のとき。
 					for locale in locales:  # 各地域について。
 						key = " ".join([name, locale])  # 設定値のキーを取得。
 						if key in config[section]:  # 設定値のキーがある時。
-							
 							value = config[section][key]  # 設定値を取得。
 							if value:  # 設定値が空文字でない時。
 								valuenode = node.find("./value[@xml--lang='{}']".format(locale))  # valueノードを取得。まだ存在しなければNoneが返る。
@@ -132,21 +137,11 @@ def iniToxcuCreator(config, parentmap):
 				if not len(node):  # 子要素を持たないpropノードのとき。
 					parentmap[node].remove(node)  # ノードを削除
 				[node.attrib.pop(i, None) for i in ("oor--localized", "oor--nillable", "oor--type")]  # oor:name以外の属性値を削除。
-			return	
-		elif tag=="node-ref":
-			node.tag = "node"
-			node.attrib.pop("oor--node-type", None)
-			
-			
-			subnodetype = node.get("oor--node-type")
-# 			lines.append("# node-type={}".format(subnodetype))			
-# 			lines.append("[{}]".format("/".join([*steps, name])))
-
-
-		for child in node:
-			iniToxcu(child)	
-		else:
-			steps.clear()	
+				return	
+			for child in node:
+				iniToxcu(child)	
+			else:
+				steps.clear()	
 	return iniToxcu
 			
 							

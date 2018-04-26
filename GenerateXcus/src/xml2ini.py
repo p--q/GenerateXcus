@@ -27,11 +27,12 @@ def main():
 		s = "\n".join(lines)
 		for k, v in nskeys.items():  # 名前空間の接頭辞を元に戻す。
 			s = s.replace(v, k)			
-		print(s)	
-		print("\n\n")
+# 		print(s)	
+# 		print("\n\n")
 		filename = ".".join([i.rsplit(".", 1)[0], "ini"])
 		with open(os.path.join(outfolder, filename), "w", encoding="utf-8") as f:
-			f.write(s)  			
+			f.write(s)  	
+	print("ini files have been created in\n{}".format(outfolder))		
 def nodeToiniCreator(lines, parentmap):
 	steps = []  # パスの要素。
 	nodetype = ""
@@ -52,6 +53,16 @@ def nodeToiniCreator(lines, parentmap):
 				nodetype = node.get("oor--node-type")  # ノードタイプをクロージャに取得。
 				lines.append("")  # 空行を挿入。
 		elif tag=="group":  # グループノードの時。
+			if node.get("oor--extensible")=="true":
+				lines.append("# extensible")  # ノードタイプをコメントに出力。
+				lines.append("[{}/{}]".format("/".join(steps), name))  # sectionを出力。
+				if len(node):  # 子要素がある時。
+					for child in node:  # 子要素について再帰。
+						nodeToini(child)	
+				lines.append("# For extensible nodes, type specification is required.")  # 例をコメントに出力。		
+				lines.append("# string propname = value")  # 例をコメントに出力。
+				lines.append("# boolean propname = value")  # 例をコメントに出力。
+				lines.append("# int propname = value")  # 例をコメントに出力。
 			if parentmap[node].tag=="set":  # 親ノードがセットノードの時。
 				steps.append("".join(["++", name]))	 # セットノードの子要素のoor:nameはユーザー定義になる。
 				lines.append("# node-type={}".format(nodetype))  # ノードタイプをコメントに出力。
