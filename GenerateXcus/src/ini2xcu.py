@@ -34,7 +34,10 @@ def main():
 		[schema.set("xmlns:{}".format(k), v) for k, v in ns.items()]  # 文字列にした時に名前空間は置換されていて出力されないので属性として追加しておく。本当に必要なのはデフォルトの名前空間以外のみ。
 		parentmap = {c:p for p in schema.iter() for c in p}  # コンポーネントスキーマノードの子親ノードの辞書。
 		iniToxcu = iniToxcuCreator(config, parentmap)
-		iniToxcu(schema)				
+		iniToxcu(schema)	
+		
+		
+					
 		x = ElementTree.tostring(schema, encoding="unicode")  # 処理したコンポーネントスキーマノードのElementTreeをXML文字列に変換。名前空間は置換されているので出力されない。しかしあらかじめ属性として追加しておかないと置換を戻した後にパースできない。
 		data = createElem("oor:component-data")  # コンポーネントデータノードのルートを作成。
 		for k, v in nskeys.items():  # コンポーネントスキーマノードの名前空間の接頭辞を元に戻す。
@@ -81,7 +84,8 @@ def iniToxcuCreator(config, parentmap):
 			c = len(steps) + 1
 			for splitsection in splitsections:
 				if c==len(splitsection):
-					if all(map(lambda x, y: x==y, steps, splitsection)):
+					if all(map(lambda x, y: x==
+							y, steps, splitsection)):
 						newnode = copy(node)
 						newnode.tag = "node"
 						newnode.set("oor--name", splitsection[-1])
@@ -97,30 +101,37 @@ def iniToxcuCreator(config, parentmap):
 # 				steps.append("".join(["++", name]))	
 # 				lines.append("# node-type={}".format(nodetype))
 # 				lines.append("[{}]".format("/".join(steps)))
-		elif tag=="prop":
-			section = "/".join(steps)
-			if not "++" in section:
-				if node.get("oor--localized")=="true":
-					node.attrib.pop("oor--localized", None)
-					for locale in locales:
-						value = config[section][" ".join([name, locale])]
-						if value:
-							valuenode = node.find("./value[@xml--lang='{}']".format(locale))
-							if valuenode:
-								valuenode.text = value
+		elif tag=="prop":  # propノードの時。
+			section = "/".join(steps)  # パスの要素を結合。
+			if not "++" in section:  # ユーザー未定義のパスの要素がないときのみ。
+				if node.get("oor--localized")=="true":  # 地域化のとき。
+					for locale in locales:  # 各地域について。
+						key = " ".join([name, locale])  # 設定値のキーを取得。
+						if key in config[section]:  # 設定値のキーがある時。
+							
+							value = config[section][key]  # 設定値を取得。
+							if value:  # 設定値が空文字でない時。
+								valuenode = node.find("./value[@xml--lang='{}']".format(locale))  # valueノードを取得。まだ存在しなければNoneが返る。
+								if valuenode:  # すでにvalueノードがあるとき。
+									if node.get("oor--nillable")=="false" and valuenode.text==value:  # 空値不可でデフォルト値と一致するとき。
+										node.remove(valuenode)  # ノードを削除してデフォルト値に委ねる。
+									else:  # デフォルト値がなかったり、デフォルト値を上書きするとき。
+										valuenode.text = value  # テキストノードに設定値を代入。
+								else:  # valueノードがない時はデフォルト値もないのでvalueノードを作成して追加する。
+									node.append(createElem("value", {"xml--lang": locale}, text=value))  # valueノードがないときは追加。
+				elif name in config[section]:  # 設定値のキーがあるとき。			
+					value = config[section][name]  # 設定値を取得。
+					if value:  # 設定値が空文字でない時。oor:nillable=trueのときは空文字は入りえず、最低Noneという文字列が返ってくる。
+						if node.get("oor--nillable")=="false" and node[0].text==value:  # 空値不可でデフォルト値と一致するとき。
+							parentmap[node].remove(node)  # ノードを削除してデフォルト値に委ねる。
+						else:  # デフォルト値がなかったり、デフォルト値を上書きするとき。
+							if len(node):  # すでにvalueノードが存在するとき。
+								node[0].text = value  # テキストノードに設定値を代入。
 							else:
-								node.append(createElem("value", {"xml--lang": locale}, text=value))
-				elif name in config[section]:
-					value = config[section][name]
-					if node.get("oor--nillable")=="false" and node[0].text==value:
-						parentmap[node].remove(node)
-					elif value:
-						if len(node):
-							node.apppend(createElem("value", text=value))
-						else:
-							node[0].text = value
-				node.attrib.pop("oor--nillable", None)
-				node.attrib.pop("type", None)	
+								node.apppend(createElem("value", text=value))  # valueノードがないときは追加。
+				if not len(node):  # 子要素を持たないpropノードのとき。
+					parentmap[node].remove(node)  # ノードを削除
+				[node.attrib.pop(i, None) for i in ("oor--localized", "oor--nillable", "oor--type")]  # oor:name以外の属性値を削除。
 			return	
 		elif tag=="node-ref":
 			node.tag = "node"
