@@ -62,12 +62,6 @@ def iniToxcuCreator(config, parentmap):
 	steps = []
 	locales = "en-US", "ja-JP",
 	def iniToxcu(node):
-		
-			
-		
-
-		
-		
 		if node in parentmap and parentmap[node].tag=="set":  # セットノードの子ノードの時。
 			parentpath = "/".join(steps)  # 親ノードのパスを取得。
 			for splitsection in splitsections:  # すべてのsplitsectionについて。
