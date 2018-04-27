@@ -1,58 +1,30 @@
 <?xml version="1.0" ?>
-<oor:component-data oor:name="OptionsDialog" oor:package="org.openoffice.Office" xmlns:oor="http://openoffice.org/2001/registry" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-	<set oor:name="OptionsDialogGroups" oor:node-type="OptionsGroup">
-		<group oor:name="OptionsGroup">
-			<prop oor:name="Hide" oor:type="xs:boolean"/>
-			<set oor:name="Pages" oor:node-type="OptionsPage">
-				<group oor:name="OptionsPage">
-					<prop oor:name="Hide" oor:type="xs:boolean"/>
-					<set oor:name="Options" oor:node-type="SingleOption">
-						<group oor:name="SingleOption">
-							<prop oor:name="Hide" oor:type="xs:boolean"/>
-						</group>
-					</set>
-				</group>
-			</set>
-		</group>
-	</set>
-	<set oor:name="Modules" oor:node-type="Module">
-		<group oor:name="Module">
-			<set oor:name="Nodes" oor:node-type="OrderedNode">
-				<group oor:name="OrderedNode">
-					<prop oor:name="Index" oor:nillable="false" oor:type="xs:int">
-						<value>-1</value>
-					</prop>
-				</group>
-			</set>
-		</group>
-	</set>
-	<set oor:name="Nodes" oor:node-type="Node">
-		<group oor:name="Node">
-			<prop oor:localized="true" oor:name="Label" oor:nillable="false" oor:type="xs:string"/>
-			<prop oor:name="OptionsPage" oor:type="xs:string"/>
-			<prop oor:name="AllModules" oor:nillable="false" oor:type="xs:boolean">
-				<value>false</value>
+<oor:component-data oor:name="OptionsDialog" oor:package="org.openoffice.Office" xmlns:oor="http://openoffice.org/2001/registry" xmlns:xml="http://www.w3.org/XML/1998/namespace">
+	<node oor:name="Nodes">
+		<node oor:name="pq.Tcu.Node1" oor:op="replace">
+			<prop oor:name="Label">
+				<value xml:lang="en-US">Extensions</value>
+				<value xml:lang="ja-JP">拡張機能</value>
 			</prop>
-			<prop oor:name="GroupId" oor:nillable="false" oor:type="xs:string">
-				<value/>
+			<prop oor:name="AllModules">
+				<value>true</value>
 			</prop>
-			<prop oor:name="GroupIndex" oor:nillable="false" oor:type="xs:int">
-				<value>-1</value>
-			</prop>
-			<set oor:name="Leaves" oor:node-type="Leaf">
-				<group oor:name="Leaf">
-					<prop oor:name="Id" oor:type="xs:string"/>
-					<prop oor:localized="true" oor:name="Label" oor:nillable="false" oor:type="xs:string"/>
-					<prop oor:name="OptionsPage" oor:nillable="false" oor:type="xs:string"/>
-					<prop oor:name="EventHandlerService" oor:nillable="false" oor:type="xs:string"/>
-					<prop oor:name="GroupId" oor:nillable="false" oor:type="xs:string">
-						<value/>
+			<node oor:name="Leaves">
+				<node oor:name="pq.Tcu" oor:op="replace">
+					<prop oor:name="Id">
+						<value>pq.Tcu</value>
 					</prop>
-					<prop oor:name="GroupIndex" oor:nillable="false" oor:type="xs:int">
-						<value>-1</value>
+					<prop oor:name="Label">
+						<value xml:lang="en-US">TreeCommandforUNO</value>
 					</prop>
-				</group>
-			</set>
-		</group>
-	</set>
+					<prop oor:name="OptionsPage">
+						<value>%origin%/dialogs/optionsdialog.xdl</value>
+					</prop>
+					<prop oor:name="EventHandlerService">
+						<value>pq.Tcu</value>
+					</prop>
+				</node>
+			</node>
+		</node>
+	</node>
 </oor:component-data>

@@ -21,14 +21,12 @@ def main():
 		lines = ["# {}.xcu".format(schema.get("oor--name"))]  # 出力する行のリスト。
 		lines.append("# The path prefixed with '++' in section must be changed to user defined name.")
 		lines.append("# The [DEFAULT](case sensitive) section has special meaning in configparser.")
-		lines.append("")
+		lines.append("# '%' must be followed by '%'.")
 		nodeToini = nodeToiniCreator(lines, parentmap)
 		nodeToini(schema)
 		s = "\n".join(lines)
 		for k, v in nskeys.items():  # 名前空間の接頭辞を元に戻す。
 			s = s.replace(v, k)			
-# 		print(s)	
-# 		print("\n\n")
 		filename = ".".join([i.rsplit(".", 1)[0], "ini"])
 		with open(os.path.join(outfolder, filename), "w", encoding="utf-8") as f:
 			f.write(s)  	
@@ -57,10 +55,11 @@ def nodeToiniCreator(lines, parentmap):
 				lines.append("# extensible")  # ノードタイプをコメントに出力。
 				lines.append("[{}/{}]".format("/".join(steps), name))  # sectionを出力。
 				if len(node):  # 子要素がある時。
-					for child in node:  # 子要素について再帰。
+					for child in node:  # 子要素について再帰。propノードしかないはず。
 						nodeToini(child)	
 				lines.append("# For extensible nodes, type specification is required.")  # 例をコメントに出力。		
 				lines.append("# xs:string propname = value")  # 例をコメントに出力。
+				lines.append("# xs:string propname en-US= value")  # 例をコメントに出力。
 				lines.append("# xs:boolean propname = value")  # 例をコメントに出力。
 				lines.append("# xs:int propname = value")  # 例をコメントに出力。
 			if parentmap[node].tag=="set":  # 親ノードがセットノードの時。

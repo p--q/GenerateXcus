@@ -1,0 +1,145 @@
+<?xml version="1.0" ?>
+<oor:component-data oor:name="Addons" oor:package="org.openoffice.Office" xmlns:oor="http://openoffice.org/2001/registry" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<group oor:name="AddonUI">
+		<set oor:name="AddonMenu" oor:node-type="MenuItem">
+			<group oor:name="MenuItem">
+				<prop oor:name="URL" oor:type="xs:string"/>
+				<prop oor:localized="true" oor:name="Title" oor:type="xs:string"/>
+				<prop oor:name="ImageIdentifier" oor:type="xs:string"/>
+				<prop oor:name="Target" oor:type="xs:string"/>
+				<prop oor:name="Context" oor:type="xs:string"/>
+				<set oor:name="Submenu" oor:node-type="MenuItem"/>
+			</group>
+		</set>
+		<set oor:name="Images" oor:node-type="Images">
+			<group oor:name="Images">
+				<prop oor:name="URL" oor:type="xs:string"/>
+				<node-ref oor:name="UserDefinedImages" oor:node-type="UserDefinedImages">
+					<prop oor:name="ImageSmall" oor:type="xs:hexBinary"/>
+					<prop oor:name="ImageBig" oor:type="xs:hexBinary"/>
+					<prop oor:name="ImageSmallHC" oor:type="xs:hexBinary"/>
+					<prop oor:name="ImageBigHC" oor:type="xs:hexBinary"/>
+					<prop oor:name="ImageSmallURL" oor:type="xs:string"/>
+					<prop oor:name="ImageBigURL" oor:type="xs:string"/>
+					<prop oor:name="ImageSmallHCURL" oor:type="xs:string"/>
+					<prop oor:name="ImageBigHCURL" oor:type="xs:string"/>
+				</node-ref>
+			</group>
+		</set>
+		<set oor:name="OfficeMenuBar" oor:node-type="PopupMenu">
+			<group oor:name="PopupMenu">
+				<prop oor:localized="true" oor:name="Title" oor:type="xs:string"/>
+				<prop oor:name="Context" oor:type="xs:string"/>
+				<set oor:name="Submenu" oor:node-type="MenuItem">
+					<group oor:name="MenuItem">
+						<prop oor:name="URL" oor:type="xs:string"/>
+						<prop oor:localized="true" oor:name="Title" oor:type="xs:string"/>
+						<prop oor:name="ImageIdentifier" oor:type="xs:string"/>
+						<prop oor:name="Target" oor:type="xs:string"/>
+						<prop oor:name="Context" oor:type="xs:string"/>
+						<set oor:name="Submenu" oor:node-type="MenuItem"/>
+					</group>
+				</set>
+			</group>
+		</set>
+		<set oor:name="OfficeMenuBarMerging" oor:node-type="MergeMenuItems">
+			<set oor:name="MergeMenuItems" oor:node-type="MergeMenuInstruction">
+				<group oor:name="MergeMenuInstruction">
+					<prop oor:name="MergePoint" oor:type="xs:string"/>
+					<prop oor:name="MergeCommand" oor:type="xs:string"/>
+					<prop oor:name="MergeCommandParameter" oor:type="xs:string"/>
+					<prop oor:name="MergeFallback" oor:type="xs:string"/>
+					<prop oor:name="MergeContext" oor:type="xs:string"/>
+					<set oor:name="MenuItems" oor:node-type="MenuItem">
+						<group oor:name="MenuItem">
+							<prop oor:name="URL" oor:type="xs:string"/>
+							<prop oor:localized="true" oor:name="Title" oor:type="xs:string"/>
+							<prop oor:name="ImageIdentifier" oor:type="xs:string"/>
+							<prop oor:name="Target" oor:type="xs:string"/>
+							<prop oor:name="Context" oor:type="xs:string"/>
+							<set oor:name="Submenu" oor:node-type="MenuItem"/>
+						</group>
+					</set>
+				</group>
+			</set>
+		</set>
+		<set oor:name="OfficeToolBar" oor:node-type="ToolBarItems">
+			<set oor:name="ToolBarItems" oor:node-type="ToolBarItem">
+				<group oor:name="ToolBarItem">
+					<prop oor:name="URL" oor:type="xs:string"/>
+					<prop oor:localized="true" oor:name="Title" oor:type="xs:string"/>
+					<prop oor:name="ImageIdentifier" oor:type="xs:string"/>
+					<prop oor:name="Target" oor:type="xs:string"/>
+					<prop oor:name="Context" oor:type="xs:string"/>
+					<prop oor:name="ControlType" oor:type="xs:string"/>
+					<prop oor:name="Width" oor:type="xs:long"/>
+				</group>
+			</set>
+		</set>
+		<set oor:name="OfficeToolbarMerging" oor:node-type="MergeToolBarItems">
+			<set oor:name="MergeToolBarItems" oor:node-type="MergeToolBarInstruction">
+				<group oor:name="MergeToolBarInstruction">
+					<prop oor:name="MergeToolBar" oor:type="xs:string"/>
+					<prop oor:name="MergePoint" oor:type="xs:string"/>
+					<prop oor:name="MergeCommand" oor:type="xs:string"/>
+					<prop oor:name="MergeCommandParameter" oor:type="xs:string"/>
+					<prop oor:name="MergeFallback" oor:type="xs:string"/>
+					<prop oor:name="MergeContext" oor:type="xs:string"/>
+					<set oor:name="ToolBarItems" oor:node-type="ToolBarItem">
+						<group oor:name="ToolBarItem">
+							<prop oor:name="URL" oor:type="xs:string"/>
+							<prop oor:localized="true" oor:name="Title" oor:type="xs:string"/>
+							<prop oor:name="ImageIdentifier" oor:type="xs:string"/>
+							<prop oor:name="Target" oor:type="xs:string"/>
+							<prop oor:name="Context" oor:type="xs:string"/>
+							<prop oor:name="ControlType" oor:type="xs:string"/>
+							<prop oor:name="Width" oor:type="xs:long"/>
+						</group>
+					</set>
+				</group>
+			</set>
+		</set>
+		<set oor:name="OfficeStatusbarMerging" oor:node-type="MergeStatusBarItems">
+			<set oor:name="MergeStatusBarItems" oor:node-type="MergeStatusBarInstruction">
+				<group oor:name="MergeStatusBarInstruction">
+					<prop oor:name="MergePoint" oor:type="xs:string"/>
+					<prop oor:name="MergeCommand" oor:type="xs:string"/>
+					<prop oor:name="MergeCommandParameter" oor:type="xs:string"/>
+					<prop oor:name="MergeFallback" oor:type="xs:string"/>
+					<prop oor:name="MergeContext" oor:type="xs:string"/>
+					<set oor:name="StatusBarItems" oor:node-type="StatusBarItem">
+						<group oor:name="StatusBarItem">
+							<prop oor:name="Context" oor:type="xs:string"/>
+							<prop oor:name="URL" oor:type="xs:string"/>
+							<prop oor:localized="true" oor:name="Title" oor:type="xs:string">
+								<value/>
+							</prop>
+							<prop oor:name="Alignment" oor:type="xs:string">
+								<value>left</value>
+							</prop>
+							<prop oor:name="AutoSize" oor:type="xs:boolean">
+								<value>false</value>
+							</prop>
+							<prop oor:name="OwnerDraw" oor:type="xs:boolean">
+								<value>false</value>
+							</prop>
+							<prop oor:name="Width" oor:type="xs:long">
+								<value>0</value>
+							</prop>
+						</group>
+					</set>
+				</group>
+			</set>
+		</set>
+		<set oor:name="OfficeHelp" oor:node-type="MenuItem">
+			<group oor:name="MenuItem">
+				<prop oor:name="URL" oor:type="xs:string"/>
+				<prop oor:localized="true" oor:name="Title" oor:type="xs:string"/>
+				<prop oor:name="ImageIdentifier" oor:type="xs:string"/>
+				<prop oor:name="Target" oor:type="xs:string"/>
+				<prop oor:name="Context" oor:type="xs:string"/>
+				<set oor:name="Submenu" oor:node-type="MenuItem"/>
+			</group>
+		</set>
+	</group>
+</oor:component-data>
