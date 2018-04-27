@@ -1,6 +1,0 @@
-<?xml version="1.0" ?>
-<oor:component-data oor:name="WriterWindowState" oor:package="org.openoffice.Office.UI" xmlns:oor="http://openoffice.org/2001/registry">
-	<node oor:name="UIElements">
-		<node oor:name="States"/>
-	</node>
-</oor:component-data>

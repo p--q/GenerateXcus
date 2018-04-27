@@ -1,5 +1,0 @@
-<?xml version="1.0" ?>
-<oor:component-data oor:name="Jobs" oor:package="org.openoffice.Office" xmlns:oor="http://openoffice.org/2001/registry">
-	<node oor:name="Jobs"/>
-	<node oor:name="Events"/>
-</oor:component-data>
