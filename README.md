@@ -4,6 +4,8 @@
 
 This is the LibreOffice Python macro that creates the following 6 xcs files from xcd files in the share/registry folder.
 
+<a href="https://github.com/p--q/GenerateXcus/tree/master/GenerateXcus/src/xcs">GenerateXcus/GenerateXcus/src/xcs</a>
+
 - <a href="https://github.com/p--q/GenerateXcus/blob/master/GenerateXcus/src/xcs/ProtocolHandler.xcs">ProtocolHandler.xcs
 </a>
 
@@ -30,7 +32,7 @@ This Python script expands the templates node of the component node of the compo
 
 The expanded component schema node is output to the xml file in the xml folder.
 
-<a href="https://github.com/p--q/GenerateXcus/tree/master/GenerateXcus/src/xml">GenerateXcus/GenerateXcus/src/xml at master · p--q/GenerateXcus</a>
+<a href="https://github.com/p--q/GenerateXcus/tree/master/GenerateXcus/src/xml">GenerateXcus/GenerateXcus/src/xml</a>
 
 ### <a href="https://github.com/p--q/GenerateXcus/blob/master/GenerateXcus/src/xml2ini.py">xml2ini.py
 </a>
@@ -39,5 +41,9 @@ This Python script will output the ini file to the ini/template folder based on 
 
 This ini file can be read by <a href="https://docs.python.org/3.5/library/configparser.html#module-configparser">14.2. configparser — Configuration file parser — Python 3.5.5 documentation</a>.
 
+<a href="https://github.com/p--q/GenerateXcus/tree/master/GenerateXcus/src/ini/template">GenerateXcus/GenerateXcus/src/ini/template</a>
+
+### <a href="https://github.com/p--q/GenerateXcus/blob/master/GenerateXcus/src/ini2xcu.py">ini2xcu.py
+</a>
 
 
