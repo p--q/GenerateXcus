@@ -25,4 +25,12 @@ This Python script expands the templates node of the component node of the compo
 
 The expanded component schema node is output to the xml file in the xml folder.
 
+### <a href="https://github.com/p--q/GenerateXcus/blob/master/GenerateXcus/src/xml2ini.py">xml2ini.py
+</a>
+
+This Python script will output the ini file to the ini folder based on the xml file created in xcs2xml.py.
+
+This ini file can be read by <a href="https://docs.python.org/3.5/library/configparser.html#module-configparser">14.2. configparser — Configuration file parser — Python 3.5.5 documentation</a>.
+
+
 
