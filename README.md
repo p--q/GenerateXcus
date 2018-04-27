@@ -46,4 +46,8 @@ This ini file can be read by <a href="https://docs.python.org/3.5/library/config
 ### <a href="https://github.com/p--q/GenerateXcus/blob/master/GenerateXcus/src/ini2xcu.py">ini2xcu.py
 </a>
 
+This Pytho script creates an xcu file from an ini file.
 
+The ini file assigns a value to the template created in xml2ini.py and puts it in the ini folder.
+
+To output the xcu file, you need the xml file created in xcs2xml.py, which is in the xml folder.
