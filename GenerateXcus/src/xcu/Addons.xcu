@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<oor:component-data oor:name="Addons" oor:package="org.openoffice.Office" xmlns:oor="http://openoffice.org/2001/registry">
+	<node oor:name="AddonUI">
+		<node oor:name="AddonMenu"/>
+		<node oor:name="Images"/>
+		<node oor:name="OfficeMenuBar"/>
+		<node oor:name="OfficeMenuBarMerging"/>
+		<node oor:name="OfficeToolBar"/>
+		<node oor:name="OfficeToolbarMerging"/>
+		<node oor:name="OfficeStatusbarMerging"/>
+		<node oor:name="OfficeHelp"/>
+	</node>
+</oor:component-data>
