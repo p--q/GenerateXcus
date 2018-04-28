@@ -102,3 +102,4 @@ if __name__ == "__main__":  # オートメーションで実行するとき
 		return XSCRIPTCONTEXT
 	XSCRIPTCONTEXT = automation()  # XSCRIPTCONTEXTを取得。 
 	macro()  # マクロの実行。
+	
