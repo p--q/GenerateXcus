@@ -1,2 +1,2 @@
-*.xcu linguist-language=XML
+**/*.xcu linguist-language=XML
 *.xcs linguist-language=XML
