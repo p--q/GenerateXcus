@@ -92,7 +92,8 @@ def nodeToiniCreator(lines, parentmap):
 		for child in node:  # 子要素について再帰。
 			nodeToini(child)	
 		else:
-			steps.clear()  # すべての子要素について調べたらパスの要素をクリアする。	
+			if steps:
+				steps.pop()  # すべての子要素について調べたらパスの要素をクリアする。	
 	return nodeToini
 if __name__ == "__main__":  # オートメーションで実行するとき
 	main()

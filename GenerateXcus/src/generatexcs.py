@@ -20,7 +20,7 @@ def macro(documentevent=None):  # 引数は文書のイベント駆動用。
 	trees = {i:ElementTree.parse(i) for i in glob.iglob("*.xcd")}  # キー:xcdファイル名、値: 各ファイルのElementTreeオブジェクト。使用するのはmain.xcdとwriter.xcd、calc.xcdだけだが面倒なのですべてのxcdファイルについてElementTreeを作成している。
 	ns = {"oor": "http://openoffice.org/2001/registry", "xs": "http://www.w3.org/2001/XMLSchema", "xsi": "http://www.w3.org/2001/XMLSchema-instance"}
 	ElementTree.register_namespace("oor", ns["oor"])  # 名前空間の設定。出力する時に使用される。
-	names = "OptionsDialog", "ProtocolHandler", "Addons", "Jobs"  # main.xcdにテンプレートノードもコンポーネントノードもあるコンポーネントスキーマノード名。
+	names = "OptionsDialog", "ProtocolHandler", "Addons", "Jobs", "Controller"  # main.xcdにテンプレートノードもコンポーネントノードもあるコンポーネントスキーマノード名。
 	for name in names:
 		xpath = './/oor:component-schema[@oor:name="{}"]'.format(name)  # コンポーネントスキーマノードを取得するためのXPath。
 		schema = trees["main.xcd"].find(xpath, ns)  # コンポーネントスキーマノードを取得。
@@ -38,7 +38,8 @@ def macro(documentevent=None):  # 引数は文書のイベント駆動用。
 		for n in schema.iterfind(xpath, ns):
 			n.attrib.pop("{{{}}}component".format(ns["oor"]))
 		schema.insert(0, templates)  # main.xcdにあったtemplatesノードを挿入する。
-		writeXCS(schema, outfolder, name, ns)  # xcsファイルとして書き出す。		
+		writeXCS(schema, outfolder, name, ns)  # xcsファイルとして書き出す。	
+	print("xcs files have been created in\n{}".format(outfolder))			
 def writeXCS(schema, outfolder, name, ns):
 	schema.set("xmlns:xs", ns["xs"])
 	schema.set("xmlns:xsi", ns["xsi"])	

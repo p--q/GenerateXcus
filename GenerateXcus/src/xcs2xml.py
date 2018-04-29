@@ -19,7 +19,8 @@ def main():
 		schema.remove(templates)  # テンプレートノードを削除。
 		expandTemplates(schema, templates, ns)  # テンプレートノードを展開する。
 		filename = ".".join([i.rsplit(".", 1)[0], "xml"])
-		writeFile(schema, outfolder, filename, reset=True)  # ファイルを書き出す。				
+		writeFile(schema, outfolder, filename, reset=True)  # ファイルを書き出す。
+	print("xml files have been created in\n{}".format(outfolder))						
 def expandTemplates(schema, templates, ns):  # テンプレートノードを展開する。
 	shematreeBuilder(templates, ns)(schema.find("component", ns))  # コンポーネントノードのテンプレートを展開。
 	schema.set("xmlns:xs", ns["xs"])

@@ -45,7 +45,13 @@ def main():
 					data.set("xmlns:{}".format(n), ns[n])  # 使用している名前空間のみコンポーネントデータノードの属性に追加。
 		schema = ElementTree.XML(x)  # 名前空間を設定したXML文字列をElementTreeにする。	
 		[data.set(k, v) for k, v in schema.items()]  # コンポーネントスキーマノードのルートの属性をコンポーネントデータノードのルートにコピーする。
-		data.extend(i for i in schema[0] if len(i))  # コンポーネントスキーマノードの子要素(元のcomponentノード）の子要素をコンポーネントデータノードのルートの子要素に追加する。子要素がない要素は除く。	
+		data.extend(i for i in schema[0])  # コンポーネントスキーマノードの子要素(元のcomponentノード）の子要素をコンポーネントデータノードのルートの子要素に追加する。
+		parentmap = {c:p for p in data.iter() for c in p}  # コンポーネントデータノードの子親ノードの辞書。パースしなおしているので元のparentmapは使えない。
+		stack = data.findall(".//node")
+		while stack:  # stackを変更しながらループするのwhile文で回す。
+			n = stack.pop()
+			if not len(n):
+				parentmap[n].remove(n)  # 子要素のない<node>要素を削除。
 		x = ElementTree.tostring(data, encoding="unicode")  # コンポーネントデータノードのElementTreeをXML文字列に変換。
 		filename = ".".join([name, "xcu"])
 		with open(os.path.join(outfolder, filename), "w", encoding="utf-8") as f:
@@ -82,7 +88,7 @@ def iniToxcuCreator(config, parentmap):
 					if node.get("oor--extensible")=="true":  # extensibleなノードではpropノードを追加する。
 						extendPropNode(parentmap, steps, config, newnode, locales)
 					parentnode.append(newnode)	
-					parentmap.update({c:p for p in newnode.iter() for c in p})  # 新しいノードをparentmapに追加。	
+					parentmap.update({c:p for p in newnode.iter() for c in p})  # 新しいノードの子ノードをparentmapに追加。新しいノード自体はすでに処理済なのでキーに追加しなくてよい。	
 					recursiveChild(iniToxcu, parentmap, removenodes, steps, newnode)
 			else:
 				for xcstag in xcstags:  # 使用済のxcsのノードを削除する。親ノードまで削除してしまうと再帰が途切れる（イテレート途中なので)。
@@ -118,7 +124,7 @@ def iniToxcuCreator(config, parentmap):
 								else:  # valueノードがない時はデフォルト値もないのでvalueノードを作成して追加する。
 									newnode = createElem("value", {"xml--lang": locale}, text=value)
 									node.append(newnode)  # valueノードがないときは追加。
-									parentmap.update({c:p for p in newnode.iter() for c in p})  # 新しいノードをparentmapに追加。	
+									parentmap.update({c:p for p in newnode.iter() for c in p})  # 新しいノードの子ノードをparentmapに追加。新しいノード自体はすでに処理済なのでキーに追加しなくてよい。	
 				elif name in config[section]:  # 設定値のキーがあるとき。			
 					value = config[section][name]  # 設定値を取得。
 					if value:  # 設定値が空文字でない時。oor:nillable=trueのときは空文字は入りえず、最低Noneという文字列が返ってくる。
@@ -133,9 +139,9 @@ def iniToxcuCreator(config, parentmap):
 							else:
 								newnode = createElem("value", text=value)
 								node.append(newnode)  # valueノードがないときは追加。		
-								parentmap.update({c:p for p in newnode.iter() for c in p})  # 新しいノードをparentmapに追加。	
+								parentmap.update({c:p for p in newnode.iter() for c in p})  # 新しいノードの子ノードをparentmapに追加。新しいノード自体はすでに処理済なのでキーに追加しなくてよい。	
 				if len(node):  # valueノードをもつpropノードの時。
-					[node.attrib.pop(i, None) for i in ("oor--localized", "oor--nillable", "oor--type")]  # oor:name以外の属性値を削除。
+					[node.attrib.pop(i, None) for i in ("oor--localized", "oor--nillable")]  # oor:name以外の属性値を削除。oor:typeも不要だがわかりやすいように残しておく。
 				else:  # valueノードを持たないpropノードのとき。
 					removenodes.append(node)  #  ノードを削除。イテレートの途中で削除するとそこでループが終わるのでループ終了後に削除する。
 					print("removed")
@@ -149,7 +155,8 @@ def recursiveChild(iniToxcu, parentmap, removenodes, steps, node):  # 再帰と�
 		iniToxcu(child)	
 	[parentmap[i].remove(i) for i in removenodes]
 	removenodes.clear()
-	steps.clear()	
+	if steps:
+		steps.pop()	
 def extendPropNode(parentmap, steps, config, node, locales):  # extensibleなノードの時。動作未検証。
 	section = "/".join(steps)
 	if section in config:

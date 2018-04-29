@@ -1,62 +1,74 @@
 <oor:component-data
-	oor:name="ProtocolHandler"
+	oor:name="Jobs"
 	oor:package="org.openoffice.Office">
-	<node oor:name="HandlerSet">
+	<node oor:name="Jobs">
 		<node
-			oor:name="com.sun.star.comp.sfx2.SfxMacroLoader"
+			oor:name="UpdateCheck"
 			oor:op="replace">
-			<prop oor:name="Protocols">
-				<value>macro:*</value>
+			<prop oor:name="Service">
+				<value>com.sun.star.setup.UpdateCheck</value>
 			</prop>
+			<node oor:name="Arguments">
+				<prop
+					oor:name="AutoCheckEnabled"
+					oor:type="xs:boolean"
+					oor:op="replace">
+					<value>true</value>
+				</prop>
+				<prop
+					oor:name="LastCheck"
+					oor:type="xs:long"
+					oor:op="replace">
+					<value>0</value>
+				</prop>
+				<prop
+					oor:name="CheckInterval"
+					oor:type="xs:long"
+					oor:op="replace">
+					<value>604800</value>
+				</prop>
+				<prop
+					oor:name="DownloadDestination"
+					oor:type="xs:string"
+					oor:op="replace">
+					<value />
+				</prop>
+				<prop
+					oor:name="AutoDownloadEnabled"
+					oor:type="xs:boolean"
+					oor:op="replace">
+					<value>false</value>
+				</prop>
+				<prop
+					oor:name="DownloadSupported"
+					oor:type="xs:boolean"
+					oor:op="replace">
+					<value>true</value>
+				</prop>
+				<prop
+					oor:name="DownloadPaused"
+					oor:type="xs:boolean"
+					oor:op="replace">
+					<value>false</value>
+				</prop>
+				<prop
+					oor:name="ExtendedUserAgent"
+					oor:type="xs:boolean"
+					oor:op="replace">
+					<value>false</value>
+				</prop>
+			</node>
 		</node>
+	</node>
+	<node oor:name="Events">
 		<node
-			oor:name="com.sun.star.comp.framework.MailToDispatcher"
-			oor:op="replace">
-			<prop oor:name="Protocols">
-				<value>mailto:*</value>
-			</prop>
-		</node>
-		<node
-			oor:name="com.sun.star.comp.sfx2.AppDispatchProvider"
-			oor:op="replace">
-			<prop oor:name="Protocols">
-				<value>.uno* slot:*</value>
-			</prop>
-		</node>
-		<node
-			oor:name="com.sun.star.comp.framework.ServiceHandler"
-			oor:op="replace">
-			<prop oor:name="Protocols">
-				<value>service:*</value>
-			</prop>
-		</node>
-		<node
-			oor:name="com.sun.star.comp.framework.jobs.JobDispatch"
-			oor:op="replace">
-			<prop oor:name="Protocols">
-				<value>vnd.sun.star.job:*</value>
-			</prop>
-		</node>
-		<node
-			oor:name="com.sun.star.comp.ScriptProtocolHandler"
-			oor:op="replace">
-			<prop oor:name="Protocols">
-				<value>vnd.sun.star.script:*</value>
-			</prop>
-		</node>
-		<node
-			oor:name="com.sun.star.comp.framework.PopupMenuControllerDispatcher"
-			oor:op="replace">
-			<prop oor:name="Protocols">
-				<value>vnd.sun.star.popup:*</value>
-			</prop>
-		</node>
-		<node
-			oor:name="com.sun.star.comp.svx.FindbarDispatcher"
-			oor:op="replace">
-			<prop oor:name="Protocols">
-				<value>vnd.sun.star.findbar:*</value>
-			</prop>
+			oor:name="onFirstVisibleTask"
+			oor:op="fuse">
+			<node oor:name="JobList">
+				<node
+					oor:name="UpdateCheck"
+					oor:op="replace" />
+			</node>
 		</node>
 	</node>
 </oor:component-data>
